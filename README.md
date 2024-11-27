@@ -1,0 +1,3 @@
+# ORDO
+
+Ordo is a command-line interface (CLI) tool designed to help developers manage their projects and integrated development environments (IDEs). It allows you to efficiently manage, add, list, and open projects directly from the terminal. Whether you're working with local projects or cloud-based environments, Ordo makes it easier to handle project configurations, IDE setups, and more with a simple set of commands.
