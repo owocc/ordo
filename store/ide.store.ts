@@ -2,12 +2,12 @@ import { config } from "../lib/config.ts";
 import type { IDE } from "../types/store.ts";
 import { v4 as uuid } from "npm:uuid";
 
-/** Find All IDE*/
+/** 查找所有 IDE */
 export const findAllIDE = () => {
     return config.get("ides") || [];
 };
 
-/** Find Many IDE*/
+/** 查找多个 IDE */
 export const findManyIDE = (condition?: (item: IDE) => boolean) => {
     const allIDEs = findAllIDE();
     if (condition && typeof condition === "function") {
@@ -17,7 +17,7 @@ export const findManyIDE = (condition?: (item: IDE) => boolean) => {
     }
 };
 
-/** Find One IDE */
+/** 查找单个 IDE */
 export function findOneIDE(idOrName: string) {
     const projects = findManyIDE((item) => {
         return item.id === idOrName || item.name === idOrName;
@@ -25,12 +25,13 @@ export function findOneIDE(idOrName: string) {
     return projects.length >= 1 ? projects[0] : undefined;
 }
 
-/** Save IDE */
+/** 保存 IDE */
 export function saveIDE(ides: IDE[]) {
     config.set("ides", ides);
 }
 
-export function addIde(ide: Omit<IDE, "id">) {
+/** 添加新的 IDE */
+export function addIDE(ide: Omit<IDE, "id">) {
     const ides = findAllIDE();
     ides.push(
         {
@@ -39,4 +40,10 @@ export function addIde(ide: Omit<IDE, "id">) {
         },
     );
     saveIDE(ides);
+}
+
+/** 删除 IDE */
+export function deleteIDE(mark: string) {
+    const projects = findAllIDE();
+    saveIDE(projects.filter((e) => e.name !== mark && e.id !== mark));
 }

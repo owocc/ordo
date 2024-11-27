@@ -6,12 +6,16 @@
     "start:web": "deno run --allow-net ./web-ui/main.tsx"
   },
   "imports": {
-    "hono": "jsr:@hono/hono@^4.6.12",
+    "@inquirer/prompts": "npm:@inquirer/prompts@^7.1.0",
     "@std/assert": "jsr:@std/assert@1",
+    "@std/fmt": "jsr:@std/fmt@^1.0.3",
     "cli-table3": "npm:cli-table3@^0.6.5",
     "commander": "npm:commander@^12.1.0",
     "conf": "npm:conf@^13.0.1",
     "consola": "npm:consola@^3.2.3",
+    "figlet": "npm:figlet@^1.8.0",
+    "gradient-string": "npm:gradient-string@^3.0.0",
+    "hono": "jsr:@hono/hono@^4.6.12",
     "uuid": "npm:uuid@^11.0.3"
   },
   "compilerOptions": {
