@@ -1,0 +1,31 @@
+{
+  "tasks": {
+    "dev": "deno run --allow-all npm:vite",
+    "build": "deno run --allow-all npm:vite build",
+    "preview": "deno run --allow-all npm:vite preview"
+  },
+  "imports": {
+    "@deno/vite-plugin": "npm:@deno/vite-plugin@latest",
+    "@dnd-kit/core": "npm:@dnd-kit/core@^6.3.1",
+    "@egoist/tailwindcss-icons": "npm:@egoist/tailwindcss-icons@^1.8.2",
+    "@iconify-json/lucide": "npm:@iconify-json/lucide@^1.2.24",
+    "@tailwindcss/vite": "npm:@tailwindcss/vite@^4.0.0",
+    "@types/react": "npm:@types/react@^19.0.0",
+    "@vitejs/plugin-react-swc": "npm:@vitejs/plugin-react-swc@^3.7.2",
+    "motion": "npm:motion@^12.0.1",
+    "react": "npm:react@^19.0.0",
+    "react-dom": "npm:react-dom@^19.0.0",
+    "tailwindcss": "npm:tailwindcss@^4.0.0",
+    "vite": "npm:vite@^6.0.11"
+  },
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
+    "jsxImportSourceTypes": "@types/react",
+    "lib": [
+      "deno.window",
+      "dom"
+    ]
+  },
+  "nodeModulesDir": "auto"
+}

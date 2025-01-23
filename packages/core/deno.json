@@ -17,9 +17,5 @@
     "gradient-string": "npm:gradient-string@^3.0.0",
     "hono": "jsr:@hono/hono@^4.6.12",
     "uuid": "npm:uuid@^11.0.3"
-  },
-  "compilerOptions": {
-    "jsx": "precompile",
-    "jsxImportSource": "hono/jsx"
   }
 }
