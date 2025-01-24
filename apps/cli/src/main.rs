@@ -1,5 +1,6 @@
 use clap::Parser;
-use ordo_core::{read_config};
+use std::fs::File;
+use std::io::prelude::*;
 // 重构 ordo cli 工具，使用 rust 减少打包体积，优化性能
 
 #[derive(Parser, Debug)]
@@ -14,6 +15,6 @@ struct Args {
     count: u8,
 }
 
-fn main() {
-    read_config().expect("TODO: panic message");
+fn main() -> std::io::Result<()> {
+
 }
