@@ -11,5 +11,7 @@ _fresh/
 node_modules/
 
 .idea
-dist/
+dist
 .DS_Store
+
+target/

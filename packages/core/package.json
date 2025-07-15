@@ -1,0 +1,19 @@
+{
+  "name": "@ordo/core",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.mjs",
+  "type": "module",
+  "scripts": {
+    "build": "unbuild",
+    "prepack": "unbuild",
+    "dev": "unbuild --stub"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.12.1",
+  "dependencies": {
+    "@types/node": "^24.0.14"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "ordo",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {},
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "packageManager": "pnpm@10.12.1",
+  "devDependencies": {
+    "turbo": "^2.5.4",
+    "unbuild": "^3.5.0"
+  }
+}
