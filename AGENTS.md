@@ -25,12 +25,13 @@ export GOPROXY=https://goproxy.cn,direct GOSUMDB=off
 
 ## 架构
 
-- **入口** `cmd/ordo/main.go` → `cmd` 包（cobra 命令：root/add/open/ls/rm/ide/tui）。
+- **入口** `cmd/ordo/main.go` → `cmd` 包（cobra 命令：root/add/open/ls/rm/ide/tui/agent）。
 - **模型** `internal/model`：`Project` / `IDE` / `Config`，JSON tag 与旧 Deno 版兼容。
 - **存储** `internal/store`：JSON 持久化在 OS 配置目录，路径由 `config.go` 按 OS 分发（macOS `~/Library/Preferences/ordo/config.json`，与旧 `npm:conf` 兼容；Linux `~/.config/ordo/`；Windows `%APPDATA%\ordo\`）。`store` 包内带 `sync.Mutex`，所有读写经此，**不要** 直接读写文件。`store.FindOneProject` / `FindOneIDE` 接受 `id` 或 `name`。
 - **打开项目** `internal/opener`：构造命令字符串，维持旧逻辑——仅在 IDE 路径是绝对路径时给 darwin/linux 加 `open` 前缀（Linux 上 `open` 并非标准命令，故使用相对命令/`code`/`idea` 时不触发该前缀）。`opener.Run` 返回 `*exec.Cmd`，经 `sh -c`（windows `cmd /c`）执行——因为命令是拼接字符串而非 argv。
 - **CLI 表格** `internal/ui`：无边框、列间三空格，用 lipgloss 着色，复刻旧 `cli-table3` 的 `blankBorder` 风格。
-- **TUI** `internal/tui`：bubbletea `Model` 按 `view` 状态机切视图（项目列表 / IDE 列表 / 添加表单 / 删除确认）。Enter 打开、d 删除、a 添加项目、A 添加 IDE、Tab 换页、q 退出。表单用 `bubbles/textinput`。
+- **TUI** `internal/tui`：bubbletea `Model` 按 `view` 状态机切视图（项目列表 / IDE 列表 / Agent 列表 / 添加表单 / 删除确认）。Enter 打开、d 删除、a/A 添加、Tab 在三视图间循环、q 退出。表单用 `bubbles/textinput`。
+- **Agent 发现** `internal/agent`：插件式 Source 接口，从本机 agent 应用发现项目目录。内置 claude（`~/.claude/projects/`）、codex（`~/.codex/sessions/` 首行 JSON 解析）、opencode（`~/.local/share/opencode/opencode.db` SQLite）。`agent.Discover` 并发收集、按路径去重合并、按最近活跃倒序。对应 CLI 命令 `agent ls` / `agent open`。
 - **旧 Deno 实现**：`cli/`、`store/*.store.ts`、`lib/`、`types/`、`utils/`、`web-ui/`、`deno.json`、`deno.lock` 仍在仓库但不再被使用；改任何功能请只动 Go 代码。
 
 ## 约定

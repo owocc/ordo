@@ -3,6 +3,7 @@ package tui
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/owocc/ordo/internal/model"
 	"github.com/owocc/ordo/internal/store"
@@ -23,7 +24,7 @@ func (m Model) renderList(projectsMode bool) string {
 			b.WriteString("\n")
 		} else {
 			for i, p := range m.projects {
-				line := fmt.Sprintf("  %-20s %s", p.Name, truncate(p.Dir, 50))
+				line := fmt.Sprintf("  %-20s %s", p.DisplayOrName(), truncate(p.Dir, 50))
 				ideName := ideNameFor(p)
 				if ideName != "" {
 					line += "  [" + ideName + "]"
@@ -43,7 +44,7 @@ func (m Model) renderList(projectsMode bool) string {
 			b.WriteString("\n")
 		} else {
 			for i, ide := range m.ides {
-				line := fmt.Sprintf("  %-20s %s", ide.Name, truncate(ide.Path, 50))
+				line := fmt.Sprintf("  %-20s %s", ide.DisplayOrName(), truncate(ide.Path, 50))
 				if i == m.cursor {
 					b.WriteString(selStyle.Render("> " + line))
 				} else {
@@ -97,7 +98,7 @@ func (m Model) renderAddIDE() string {
 	b.WriteString(titleIDE.Render("Ordo · 添加 IDE"))
 	b.WriteString("\n\n")
 	b.WriteString(fmt.Sprintf("  名称:    %s\n", m.inputs[0].View()))
-	b.WriteString(fmt.Sprintf("  路径:    %s\n", m.inputs[1].View()))
+	b.WriteString(fmt.Sprintf("  命令/路径: %s\n", m.inputs[1].View()))
 	b.WriteString(fmt.Sprintf("  描述:    %s\n", m.inputs[2].View()))
 	b.WriteString("\n" + hintStyle.Render("Enter 提交    Esc 取消"))
 	if m.err != "" {
@@ -119,6 +120,57 @@ func (m Model) renderConfirmDelete() string {
 	return b.String()
 }
 
+func (m Model) renderAgentList() string {
+	var b strings.Builder
+	b.WriteString(titleAgent.Render(fmt.Sprintf("Ordo · Agent 项目 (%d)", len(m.agentProjects))))
+	b.WriteString("\n\n")
+	if len(m.agentProjects) == 0 {
+		b.WriteString(hintStyle.Render("  没有发现 agent 项目。按 r 刷新。"))
+		b.WriteString("\n")
+	} else {
+		for i, p := range m.agentProjects {
+			sources := strings.Join(p.Sources, "+")
+			age := relativeTimeAgent(p.LastActive)
+			line := fmt.Sprintf("  %-55s [%s] %s %s",
+				truncate(p.Path, 55),
+				sourceStyle.Render(sources),
+				sessionStyle.Render(fmt.Sprintf("%3d", p.SessionCount)),
+				age,
+			)
+			if i == m.cursor {
+				b.WriteString(selStyle.Render("> " + line))
+			} else {
+				b.WriteString(normalStyle.Render("  " + line))
+			}
+			b.WriteString("\n")
+		}
+	}
+	b.WriteString("\n" + hintStyle.Render(agentHelp))
+	if m.status != "" {
+		b.WriteString("\n" + okStyle.Render(m.status))
+	}
+	if m.err != "" {
+		b.WriteString("\n" + errStyle.Render(m.err))
+	}
+	return b.String()
+}
+
+func relativeTimeAgent(t time.Time) string {
+	d := time.Since(t)
+	switch {
+	case d < time.Minute:
+		return "刚刚"
+	case d < time.Hour:
+		return fmt.Sprintf("%dm前", int(d.Minutes()))
+	case d < 24*time.Hour:
+		return fmt.Sprintf("%dh前", int(d.Hours()))
+	case d < 30*24*time.Hour:
+		return fmt.Sprintf("%dd前", int(d.Hours()/24))
+	default:
+		return t.Format("01-02")
+	}
+}
+
 func truncate(s string, n int) string {
 	if len(s) <= n {
 		return s
@@ -137,5 +189,5 @@ func ideNameFor(p model.Project) string {
 	if ide == nil {
 		return ""
 	}
-	return ide.Name
+	return ide.DisplayOrName()
 }

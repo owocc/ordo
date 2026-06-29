@@ -17,7 +17,7 @@ var ideAddCmd = &cobra.Command{
 	Short: "将一个新的 IDE 添加到管理器",
 	Args:  cobra.MaximumNArgs(2),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		name, path := "", ""
+		var name, path, displayName string
 		if len(args) > 0 {
 			name = args[0]
 		}
@@ -25,22 +25,36 @@ var ideAddCmd = &cobra.Command{
 			path = args[1]
 		}
 		if name == "" {
-			name = promptText("请输入 IDE 名称（例如: VSCode）：")
-			if name == "" {
-				return fail("IDE 名称是必填的", nil)
+			var ve error
+			name, displayName, ve = promptNameAndDisplay("IDE")
+			if ve != nil {
+				return fail(ve.Error(), nil)
 			}
+		} else {
+			if ve := model.ValidateName(name); ve != nil {
+				return fail("无效的 IDE 名称", ve)
+			}
+			displayName = promptText("显示名称（可选，支持空格，直接回车使用 '" + name + "'）：")
+		}
+		if displayName == "" {
+			displayName = name
 		}
 		if path == "" {
-			path = promptText("请输入 IDE 路径或命令（例如: /usr/bin/code 或 idea）：")
+			path = promptText("请输入 IDE 路径或命令（例如: code、cursor、或 /usr/bin/code）：")
 			if path == "" {
 				return fail("IDE 路径或命令是必填的", nil)
 			}
 		}
 		desc := promptText("可选 - IDE 描述：")
-		if _, err := store.AddIDE(model.IDE{Name: name, Path: path, Desc: desc}); err != nil {
+		if _, err := store.AddIDE(model.IDE{
+			Name:        name,
+			DisplayName: displayName,
+			Path:        path,
+			Desc:        desc,
+		}); err != nil {
 			return fail("添加 IDE 失败", err)
 		}
-		ui.Success("IDE '" + name + "' 已成功添加！")
+		ui.Success("IDE '" + displayName + "' 已成功添加！")
 		return nil
 	},
 }

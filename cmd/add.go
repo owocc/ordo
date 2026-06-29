@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"path/filepath"
 
 	"github.com/owocc/ordo/internal/model"
@@ -9,6 +10,24 @@ import (
 	"github.com/spf13/cobra"
 )
 
+func promptNameAndDisplay(what string) (name, display string, err error) {
+	for {
+		n := promptText("请输入" + what + "名称（标识符，不含空格，如 my-project）：")
+		if n == "" {
+			return "", "", fmt.Errorf("%s名称是必填项", what)
+		}
+		if ve := model.ValidateName(n); ve != nil {
+			ui.Error(ve.Error())
+			continue
+		}
+		name = n
+		break
+	}
+	d := promptText("显示名称（可选，支持空格，直接回车使用 '" + name + "'）：")
+	display = d
+	return
+}
+
 var addCmd = &cobra.Command{
 	Use:   "add [name] [dir] [ide]",
 	Short: "将一个项目添加到管理器",
@@ -16,7 +35,12 @@ var addCmd = &cobra.Command{
 		"未提供的参数会进入交互式输入。",
 	Args: cobra.MaximumNArgs(3),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		name, dir, ideArg := "", "", ""
+		var (
+			name        string
+			displayName string
+			dir         string
+			ideArg      string
+		)
 		if len(args) > 0 {
 			name = args[0]
 		}
@@ -28,10 +52,19 @@ var addCmd = &cobra.Command{
 		}
 
 		if name == "" {
-			name = promptText("请输入项目名称：")
-			if name == "" {
-				return fail("项目名称是必填项", nil)
+			var ve error
+			name, displayName, ve = promptNameAndDisplay("项目")
+			if ve != nil {
+				return fail(ve.Error(), nil)
 			}
+		} else {
+			if ve := model.ValidateName(name); ve != nil {
+				return fail("无效的项目名称", ve)
+			}
+			displayName = promptText("显示名称（可选，支持空格，直接回车使用 '" + name + "'）：")
+		}
+		if displayName == "" {
+			displayName = name
 		}
 		if dir == "" {
 			dir = promptText("请输入项目目录：")
@@ -61,12 +94,13 @@ var addCmd = &cobra.Command{
 
 		if _, err := store.AddProject(model.Project{
 			Name:          name,
+			DisplayName:   displayName,
 			Dir:           dir,
 			RelationIDEID: ideID,
 		}); err != nil {
 			return fail("添加项目失败", err)
 		}
-		ui.Success("项目 '" + name + "' 已成功添加！")
+		ui.Success("项目 '" + displayName + "' 已成功添加！")
 		return nil
 	},
 }

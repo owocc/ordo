@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/owocc/ordo/internal/agent"
 	"github.com/owocc/ordo/internal/model"
 	"github.com/owocc/ordo/internal/store"
 )
@@ -82,13 +84,49 @@ func PrintProjects() {
 		ideName := "None"
 		if p.RelationIDEID != "" {
 			if ide, ok := ideMap[p.RelationIDEID]; ok && ide != nil {
-				ideName = ide.Name
+				ideName = ide.DisplayOrName()
 			}
 		}
-		rows = append(rows, []string{p.ID, p.Name, p.Dir, ideName})
+		rows = append(rows, []string{p.ID, p.DisplayOrName(), p.Dir, ideName})
 	}
 	Success(fmt.Sprintf("找到 %d 个项目：", len(projects)))
 	fmt.Print(renderTable([]string{"ID", "项目名称", "项目目录", "默认 IDE"}, rows))
+}
+
+// PrintAgent 打印从 agent store 发现的项目。
+func PrintAgent(projects []agent.Project) {
+	if len(projects) == 0 {
+		Info("没有发现 agent 项目。")
+		return
+	}
+	rows := make([][]string, 0, len(projects))
+	for _, p := range projects {
+		sources := strings.Join(p.Sources, "+")
+		rows = append(rows, []string{
+			p.Path,
+			sources,
+			fmt.Sprintf("%d", p.SessionCount),
+			relativeTime(p.LastActive),
+		})
+	}
+	Success(fmt.Sprintf("发现 %d 个 agent 项目：", len(projects)))
+	fmt.Print(renderTable([]string{"路径", "来源", "会话", "最近活跃"}, rows))
+}
+
+func relativeTime(t time.Time) string {
+	d := time.Since(t)
+	switch {
+	case d < time.Minute:
+		return "刚刚"
+	case d < time.Hour:
+		return fmt.Sprintf("%dm 前", int(d.Minutes()))
+	case d < 24*time.Hour:
+		return fmt.Sprintf("%dh 前", int(d.Hours()))
+	case d < 30*24*time.Hour:
+		return fmt.Sprintf("%dd 前", int(d.Hours()/24))
+	default:
+		return t.Format("01-02")
+	}
 }
 
 // PrintIDEs 打印 IDE 列表。
@@ -100,7 +138,7 @@ func PrintIDEs() {
 	}
 	rows := make([][]string, 0, len(ides))
 	for _, ide := range ides {
-		rows = append(rows, []string{ide.ID, ide.Name, ide.Path})
+		rows = append(rows, []string{ide.ID, ide.DisplayOrName(), ide.Path})
 	}
 	Success(fmt.Sprintf("找到 %d 个 IDE：", len(ides)))
 	fmt.Print(renderTable([]string{"ID", "IDE 名称", "安装路径"}, rows))
